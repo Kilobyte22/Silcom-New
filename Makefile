@@ -1,7 +1,7 @@
 
-.PHONY: kernel
+.PHONY: kernel package
 
-all: kernel package
+all: kernel bootloader
 
 kernel:
 	mkdir -p kernel/lib
@@ -12,13 +12,13 @@ kernel:
 bootloader:
 	moon makeloader.moon
 
-package:
+package: all
 	mkdir -p package
 	cp kernel/out.sef package/silcom
-	cp compiled_bootloader.lua package/init.lua
+	cp compiled_loader.lua package/init.lua
 
 clean:
 	rm -rf kernel/lib
-	rm compiled_bootloader.lua
+	rm compiled_loader.lua
 	rm kernel/out.sef
 	rm -rf package

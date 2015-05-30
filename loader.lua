@@ -1,7 +1,7 @@
 -- Silcom Stage 2 bootloader
 
--- Build script will inject libraries here
--- [[LIBS]]
+-- Will get loaded by the EEPROM
+-- Will load the kernel SEF file and run the kmain symbol
 
 -- load files
 
