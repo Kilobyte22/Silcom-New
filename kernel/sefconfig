@@ -1,0 +1,56 @@
+if computer then
+  error("This buildscript cannot be run on OpenComputers, as it depends on native libraries")
+end
+
+local msparse = require("moonscript.parse")
+local mscompile = require("moonscript.compile")
+
+local components = {}
+
+function moon(filename, script)
+  local tree, err = msparse.string(script)
+  if not tree then
+    error("Could not parse moonscript file "..filename..": "..err)
+  end
+  local out, err, pos = mscompile.tree(tree, {implicitly_return_root = false})
+  if not out then
+    error("Could not compile "..filename.."!\n"..mscompile.format_error(err, pos, script))
+  end
+  return out
+end
+
+function codeSection(name, filename)
+  local data = file(filename)
+  if filename:sub(-5, -1) == '.moon' then
+    -- compile moonscript
+    data = moon(filename, data)
+  end
+
+  local section = addSection(sections.code, data)
+  addMapping(name, platforms.oc, section)
+end
+function component(name)
+  table.insert(components, name)
+  codeSection("components/"..name, "components/"..name..".moon")
+end
+
+codeSection("entry", "entry.moon")
+
+component("core")
+component("component_access")
+component("gpu")
+component("process")
+component("scheduler")
+
+
+-- Automatically generate load section from components
+local sec = moon("components.moon", file("components.moon")).."\n"
+for i = 1, #components do
+  local c = components[i]
+  sec = sec .. "c('" .. c .. "')\n"
+end
+sec = sec .. "return ret"
+local s = addSection(sections.code, sec)
+addMapping("components", platforms.oc, s)
+
+addExport("kmain", "entry", "kmain")

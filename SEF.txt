@@ -1,0 +1,64 @@
+SEF Is the file format used for executable files in Silcom. Due to a special header, it is possible to use SEF for your own projects.
+
+The file starts with a header of "#!/bin/sefload" followed by a line feed character. This allows SEF files to be loaded on e.g. OpenOS as well. After that it has a table of content, containing all the sections of the file.
+
+Followed by that there is the mapping section. It allows you to map certain files (accessible through require() or sef.resource) to certain regions in the SEF file. The name/architecture combination has to be unique. If a name is valid for all architectures (0x0000), it must not be set for any other architecture. This allows to build binarys working with multiple platforms. The format is not limited to lua.
+
+Currently there are 4 types of sections defined:
+
+    Metadata: Contains data about the binary or something. Simple key/value store
+
+    Code: Stores loadable code. This is platform specific. (on openos this is done using require("@sectioname"))
+
+    Data: Stores data accessible from within the program
+
+    Exports: Specifies loadable libraries inside the binary to outside. For executable files a _main symbol MUST be exported and point to a function. This is the entry point for the file.
+    Exports pointing to undefined mappings (e.g. because the platform is not listed) must be ignored.
+
+TOC entry:
+    2 byte section type
+        0 - metadata
+        1 - code
+        2 - data (arbitrary binary content)
+    4 byte length
+
+TOC:
+    2 byte TOC-length (entries)
+    x TOC entry
+
+Mapping entry:
+    1 byte length of name
+    x byte name
+    2 byte architecture
+        0 - all
+        1 - silcom
+        2 - openos
+        3 - regular lua
+    2 byte TOC entry
+
+
+Mapping:
+    2 byte mapping count
+    x Mapping entry
+
+Exports:
+    2 byte count
+      1 byte name length
+      x byte name
+      1 byte mapping name length
+      x byte mapping name
+      1 byte element name length
+      x byte element name
+
+All:
+    Magic: "#!/bin/sefload" <LF>
+
+    x byte TOC
+    x byte Section Mapping
+    x byte exports
+
+
+Entry types:
+    Metadata: WIP
+    Code: Arbitrary data - executable (e.g. code)
+    Data: Arbitrary data - not executable (e.g. resources)
