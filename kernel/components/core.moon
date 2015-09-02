@@ -1,5 +1,7 @@
 import yield from coroutine
 
+export Silcom
+
 _G.panic = (message) ->
   error("Kernel Panic: "..message)
 _G.halt = -> while true do yield!
@@ -23,3 +25,9 @@ table.find = (table, value) ->
     return k if value == v
 
 _G.b = (value) => not not value
+
+_G.assert = (condition, message) ->
+  panic(message or "Assertation Failed") unless condition
+
+class Silcom
+  
